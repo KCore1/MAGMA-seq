@@ -14,29 +14,6 @@ from utilities.arguments import (
     ARGUMENTS,
 )
 
-bcs = [
-    "TAGGACATCCGTAATTGTGG",
-    "ACATGATTACTCATGGGTTC",
-    "CCATACATGCAGGAAGCAGC",
-    "CCGTCCTCATTTCCTTCTGT",
-    "ATGCCTTCCTGGGTGGGTAC",
-    "ACATATTCAAAGACGGCAGG",
-    "TCGTCCATGATGGAAGCTTG",
-    "TAGTAATTAAGTGATTCAAC",
-    "ATGTATTTGTATCCTCGAGC",
-    "TATGATGGCAACGTGTAATT",
-    "ATGCACACATTTAAAGCTGT",
-    "ACAGGCATGAATAATTATGG",
-    "AAACCTACATTGCAAGGCTC",
-    "CTTGATGTCTGCGATTCTTG",
-    "TATCGTACGCTTGAACAATC",
-    "AATTATTGCAAGATGTATGT",
-    "TTGGACGGATGGGTATATTC",
-    "CATTATGTGTAGCAACCTAT",
-    "CAGTAAGGATAGGAAGGAGC",
-    "TCGTGTTCAATTAATGGATC",
-]
-
 if __name__ == "__main__":
     print_logo()
     map_params, configs = parse_args_and_read_config_mapping(sys.argv[1:])
@@ -98,7 +75,6 @@ if __name__ == "__main__":
             input_df2 = pd.read_csv(output_2)
             df, failure_df = merge_vhvl(input_df1, input_df2)
             print("Merging VH and VL for sample: ", sample_VH, sample_VL)
-            df_selected = df[df["Barcode"].isin(bcs)]  # FIXME: Do we want this later?
             df_selected.to_csv(
                 f"{map_params.output_dir}/{sample_VH}_{sample_VL}_vhvl_selected.csv",
                 index=False,

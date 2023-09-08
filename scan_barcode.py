@@ -170,7 +170,7 @@ def match_sample(sample, params, barcodes, ref_freqs, filenames):
     ) as file:
         matched, rjk = match_barcodes(
             barcodes, file, params.template, params.barcode_start, sample[0], True
-        )  # FIXME: debug is true currently
+        )  # debug is true currently
     lengths = [len(x) for x in matched.values()]
     for key in matched.keys():
         matched[key] = matched[key][0]
@@ -362,4 +362,5 @@ if __name__ == "__main__":
     # doctest.testmod() # Comment when you actually want to use this script, uncomment to use doctests
     sys.exit(0)
 
-# FIXME: update scan_output.csv example
+# FIXME: update scan_output.csv example (just delete that last column)
+# FIXME: Bring back the required files for 4A8, CC12.1

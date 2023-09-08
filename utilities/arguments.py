@@ -386,7 +386,6 @@ def parse_experiments(config, samples):
     return experiments
 
 
-# TODO: Could this section be useful?
 def parse_proteins(config, tiles, samples, experiments):
     if not config.has_section(PROTEINS_NAME):
         raise argparse.ArgumentTypeError(

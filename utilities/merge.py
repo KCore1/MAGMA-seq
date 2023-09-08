@@ -51,7 +51,7 @@ def read_line(f):
 
 def merge_reads(
     s1, s2, q1, q2, amplen
-):  # FIXME minimum amount of overlap?
+):
     """Merge paired end reads of an amplicon and return sequence,
     quality, and number of mismatches.
 
