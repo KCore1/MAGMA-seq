@@ -4,7 +4,6 @@
 !UMI*.fastq.gz
 __pycache__/*
 /__pycache__
-UMI_sequences/
 Output*/
 *~*
 .*/
@@ -12,24 +11,11 @@ L0021_S3_L001_R*_001.fastq.gz
 !fwd_reads.fastq
 !rev_reads.fastq
 *merged.csv
-MLE/counts*
-MLE/Act*
 MLE/mle.*
-MLE/test_*
-MLE/plots/
-MLE/old_files/
 Maps/
-test.ipynb
 Match*
 output*
 *.out
 MLE/__pycache__/
-PCR_VL
 maps*
-all_maps
-IFU*
-Base*
-notebooks/merged*
-notebooks/VH*
-old_configs/
-# configs
+Test*/

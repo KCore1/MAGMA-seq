@@ -69,7 +69,6 @@ def unique_variants(df, d=dict()):
 
     d: dictionary of variants and their counts (typically empty, but can be used to add to existing dictionary)
     df: dataframe of matched barcodes and variants/mutations
-    TODO: Check if this is what we want, do we want this in the result? Or in the haplotyping code? Do we want below?
     """
     for var in df["Variant"].values:
         if var in d:
@@ -86,7 +85,6 @@ def barcodes_per_variant(df, d=dict()):
 
     df: dataframe of matched barcodes and variants/mutations
     d: dictionary of variants and barcodes associated (typically empty, but can be used to add to existing dictionary)
-    TODO: Check if this is what we want, do we want this in the result? Or in the haplotyping code? Do we want above?
     """
     for var in df["Variant"].values:
         if var in d:
@@ -363,4 +361,3 @@ if __name__ == "__main__":
     sys.exit(0)
 
 # FIXME: update scan_output.csv example (just delete that last column)
-# FIXME: Bring back the required files for 4A8, CC12.1

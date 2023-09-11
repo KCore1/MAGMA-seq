@@ -74,7 +74,6 @@ def is_good_barcode(read, template, verbose=False):
     return is_good, errors
 
 
-# simple version for testing
 def choose_variant(bc: str, d: dict, freq: dict, barcode_params, alpha=0.05):
     """Choose the variant that best fits the barcode.
     This version simply chooses the variant with the highest counts.
@@ -114,43 +113,6 @@ def choose_variant(bc: str, d: dict, freq: dict, barcode_params, alpha=0.05):
         count = round(d_adjusted[var], 1)
         alpha = d[var]
         return var, count, alpha
-
-# FIXME: What to do with this?
-# def choose_variant(bc: str, d: dict, freq: dict, template: str, alpha=0.05):  # actual version
-#     """Choose the variant that best fits the barcode.
-#     This version uses a cumulative distribution function to determine which variant is most likely.
-
-#     bc: barcode
-#     d: dictionary of possible variant matches from match_barcode_and_variant
-#     freq: frequencies of possible variants, also from match_barcode_and_variant
-#     template: template of barcode in mixed base format
-#     alpha: p-value at which to accept a given barcode"""
-#     if is_good_barcode(bc, template)[0] == True:
-#         variants = list(d.keys())
-#         counts = list(d.values())
-#         num_tests = len(counts)
-#         total = sum(d.values())
-#         f_vals = [freq[var] for var in variants]
-#         p_vals = [1-binom.cdf(count, total, p=f_val)
-#                 for count, f_val in zip(counts, f_vals)]
-#         p_val = min(p_vals, default=2)
-#         if p_val < alpha/num_tests:
-#             chosen_index = p_vals.index(min(p_vals))
-#             chosen_variant = variants[chosen_index]
-#             p_vals.pop(chosen_index)
-#             # need to handle case where there is only one variant
-#             if min(p_vals, default=2) > alpha/num_tests:
-#                 return chosen_variant, d[chosen_variant], np.float32(p_val) # FIXME: Do we need barcode frequencies?
-#                 # return chosen_variant, d[chosen_variant], p_val # slower when using double precision
-#             else:
-#                 return None, None, None
-#         else:
-#             return None, None, None
-#     else:
-#         warnings.warn('Barcode template may not be specified correctly.')
-#         return None, None, None
-
-# Overloaded merge_all_reads function specifically for barcoding usage
 
 
 def merge_all_reads(
@@ -352,7 +314,7 @@ def barcode_to_variant_map(reads, amplens, wt_csv_path, barcode_params):
                     1,
                     freq[mut],
                     genes[mut],
-                )  # FIXME 1 is hack for now to get this to work, talk to Brian about this
+                )  # 1 is hack for now to get this to work, talk to Brian about this
                 for mut, count in d.items()
             ]
         )
@@ -374,7 +336,7 @@ def barcode_to_variant_map(reads, amplens, wt_csv_path, barcode_params):
                     (bc, mut, count_d, 1, freq[mut], genes[mut])
                     for mut, count_d in d.items()
                 ]
-            )  # FIXME also has 1
+            )  # also has 1
 
     bc_map_success = pd.DataFrame(
         bc_var_pairs_success,
@@ -449,7 +411,7 @@ def write_merged_reads(
         [],
         [],
         [],
-    )  # FIXME: Pre allocate np arrays for vectorized operations when adding them all to df
+    )  # FUTURE: Pre allocate np arrays for vectorized operations when adding them all to df
 
     wts = pd.read_csv(wt_csv_path)
     amplens_to_merge_at = set(wts[wts["vh_or_vl"] == vh_or_vl]["amplen"])
