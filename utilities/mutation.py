@@ -1,7 +1,7 @@
 import dataclasses
 from dataclasses import dataclass
 
-from dna import is_aa, is_codon, is_dna_base, translate_sequence
+from utilities.dna import is_aa, is_codon, is_dna_base, translate_sequence
 
 
 @dataclass(frozen=True)

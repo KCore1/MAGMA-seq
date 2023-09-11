@@ -136,7 +136,6 @@ def match_barcodes(
         for id, seq, space, qual in read_seqs(file):
             read_barcode = barcode(seq, template, barcode_start)
             if read_barcode in barcodes["Barcode"].values:
-                # print(read_barcode)
                 if read_barcode in matched:
                     matched[read_barcode].append(
                         barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
@@ -318,11 +317,8 @@ def main(argv):
         collapsed.drop("Count", axis=1, inplace=True)
 
         combined.rename(columns={"Count": "Rijk"}, inplace=True)
-        # combined = mle.calc_er_barcodes(combined)
-        # collapsed = mle.calc_er(collapsed)
 
         # sort by concentration and bin
-        # NOTE: Could this be done at beginning? I don't think so because of output_collapsed_counts. But maybe.
         collapsed = collapsed.sort_values(
             by=["Concentration", "Bin"], ascending=[True, False]
         )

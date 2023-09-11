@@ -2,8 +2,8 @@
 !test_R*.fastq.gz
 !test_R*.fastq
 !UMI*.fastq.gz
-__pycache__/*
-/__pycache__
+__pycache__/
+*/__pycache__
 Output*/
 *~*
 .*/

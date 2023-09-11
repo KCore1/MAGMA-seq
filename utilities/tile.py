@@ -2,8 +2,8 @@ import dataclasses
 from dataclasses import dataclass
 from typing import List
 
-from dna import is_dna_seq, translate_sequence
-from mutation import Mutation, NontargetMutation
+from utilities.dna import is_dna_seq, translate_sequence
+from utilities.mutation import Mutation, NontargetMutation
 
 
 @dataclass(frozen=True)

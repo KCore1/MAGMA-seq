@@ -75,10 +75,6 @@ if __name__ == "__main__":
             input_df2 = pd.read_csv(output_2)
             df, failure_df = merge_vhvl(input_df1, input_df2)
             print("Merging VH and VL for sample: ", sample_VH, sample_VL)
-            df_selected.to_csv(
-                f"{map_params.output_dir}/{sample_VH}_{sample_VL}_vhvl_selected.csv",
-                index=False,
-            )
             df.to_csv(
                 f"{map_params.output_dir}/{sample_VH}_{sample_VL}_vhvl.csv", index=False
             )
