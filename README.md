@@ -78,6 +78,8 @@ For the matching config, the following sections are required:
 
 ## 4. Notes ##
 
+- Install time: ~10 minutes  
+- Run time: For a dataset containing ~3 million sequences we expect a run time of ~45 minutes on the following hardware (Alpine supercomputing cluster (CU Research Computing) x86_64 AMD Milan CPU with 32MB L3 Cache (utilizing 8 cores), 3.75 GB RAM/core)  
 - Must add new output_dir name in config file for each new sequencing run.
 - Positions in DNA are 0 indexed, positions in protein sequence are 1 indexed.
 - Code outputs merged files into csv and detects merged sequences if output_dir already exists.
