@@ -79,7 +79,7 @@ def calc_mean_fluor(sigma, Fg, sort_frac, ER):
 
 def Fbar_func(**k):
     """Fmax: variant dependent maximum fluorescence encoded in units of RFU."""
-    Fbar = (k["Fmax"] - k["B"]) * k["Ck"] / (k["Kd"] + k["Ck"]) + k["B"]
+    Fbar = (k["bright"] * k["Fmax"] - k["B"]) * k["Ck"] / (k["Kd"] + k["Ck"]) + k["B"]
     return max(Fbar, k["B"])
 
 
@@ -107,7 +107,7 @@ def pijk_exp(**k):
 
 def sigmapijk_func(**k):
     sigma_pijk = np.sqrt(
-        k["extrinsic_error"] ** 2 + k["pijk_exp"] ** 2 * (1 / k["rijk"] + 1 / k["rir"])
+        k['extrinsic_error']**2 + k["pijk_exp"] ** 2 * (1 / k["rijk"] + 1 / k["rir"])
     )
     return sigma_pijk
 
@@ -118,10 +118,7 @@ def loglikelihood_func(**k):
 
 def calc_Fbar(**k):
     """Calculate the average fluorescence value given variant Kd and maximum fluorescence (Fmax)."""
-    Fbar_ik = [
-        Fbar_func(Kd=k["Kd"], Fmax=k["Fmax"], B=k["B"], Ck=k["Ck"][i])
-        for i in range(len(k["Ck"]))
-    ]
+    Fbar_ik = [Fbar_func(Kd=k["Kd"], Fmax=k["Fmax"], B=k["B"], Ck=k["Ck"][i], bright=k["bright"][i]) for i in range(len(k["Ck"]))]
     return Fbar_ik
 
 
@@ -156,12 +153,7 @@ def calc_pijk_exp(**k):
 
 def calc_sigmapijk(**k):
     sigma_pijk_array = [
-        sigmapijk_func(
-            pijk_exp=k["pijk_exp"][i],
-            rijk=k["rijk"][i],
-            rir=k["rir"],
-            extrinsic_error=k["extrinsic_error"],
-        )
+        sigmapijk_func(pijk_exp=k["pijk_exp"][i], rijk=k["rijk"][i], rir=k["rir"], extrinsic_error=k['extrinsic_error'])
         for i in range(len(k["pijk_exp"]))
     ]
     return sigma_pijk_array
@@ -178,33 +170,25 @@ def calc_likelihood(**k):
     return l_array
 
 
-def sum_likelihood(
-    solver_vars, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error
-):
+def sum_likelihood(solver_vars, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright):
     """Returns the negative of the summation of the log likelihood terms for each variant.
     Solver minimizes the result by changing solver_vars, an array of the sequential variant Kds,
     maximum fluorescence values, and underlying reference counts."""
     Kd_solver = solver_vars[0]
     Fmax_solver = solver_vars[1]
-    Fbar_ik = calc_Fbar(Kd=Kd_solver, Fmax=Fmax_solver, B=B, Ck=Ck)
+    Fbar_ik = calc_Fbar(Kd=Kd_solver, Fmax=Fmax_solver, B=B, Ck=Ck, bright=bright)
     pijk = calc_pijk(Fbar=Fbar_ik, Hj=Hj, Gj=Gj, sigma=sigma, error_rate=0)
     pijk_exp = calc_pijk_exp(fi=fi, rijk=rijk, rjk=rjk, sorting_frac=sorting_frac)
-    sigma_pijk = calc_sigmapijk(
-        pijk_exp=pijk_exp, rijk=rijk, rir=rir, extrinsic_error=ext_error
-    )
+    sigma_pijk = calc_sigmapijk(pijk_exp=pijk_exp, rijk=rijk, rir=rir, extrinsic_error=ext_error)
     l_array = calc_likelihood(pijk=pijk, pijk_exp=pijk_exp, sigmapijk=sigma_pijk)
     return sum(l_array)
 
 
-def sum_likelihood_fmax_only(
-    Fmax, Kd, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error
-):
-    Fbar_ik = calc_Fbar(Kd=Kd, Fmax=Fmax, B=B, Ck=Ck)
+def sum_likelihood_fmax_only(Fmax, Kd, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright):
+    Fbar_ik = calc_Fbar(Kd=Kd, Fmax=Fmax, B=B, Ck=Ck, bright=bright)
     pijk = calc_pijk(Fbar=Fbar_ik, Hj=Hj, Gj=Gj, sigma=sigma, error_rate=0)
     pijk_exp = calc_pijk_exp(fi=fi, rijk=rijk, rjk=rjk, sorting_frac=sorting_frac)
-    sigma_pijk = calc_sigmapijk(
-        pijk_exp=pijk_exp, rijk=rijk, rir=rir, extrinsic_error=ext_error
-    )
+    sigma_pijk = calc_sigmapijk(pijk_exp=pijk_exp, rijk=rijk, rir=rir, extrinsic_error=ext_error)
     l_array = calc_likelihood(pijk=pijk, pijk_exp=pijk_exp, sigmapijk=sigma_pijk)
     return sum(l_array)
 
@@ -226,25 +210,11 @@ def plot_reconstruction(kd, Fmax, Ck, mf, variant):
     plt.clf()
 
 
-def minimize_log_likelihood(
-    initial_guess,
-    bounds,
-    B,
-    Ck,
-    Hj,
-    Gj,
-    sigma,
-    rijk,
-    rjk,
-    rir,
-    sorting_frac,
-    fi,
-    ext_error,
-):
+def minimize_log_likelihood(initial_guess, bounds, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright):
     result = minimize(
         fun=sum_likelihood,
         x0=initial_guess,
-        args=(B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error),
+        args=(B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright),
         method="L-BFGS-B",
         bounds=bounds,
     )
@@ -262,13 +232,11 @@ def minimize_log_likelihood(
     return result, success
 
 
-def minimize_log_likelihood_fmax(
-    initial_guess, Kd, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error
-):
+def minimize_log_likelihood_fmax(initial_guess, Kd, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright):
     result = minimize(
         fun=sum_likelihood_fmax_only,
         x0=initial_guess,
-        args=(Kd, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error),
+        args=(Kd, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright),
         method="L-BFGS-B",
     )
     #     result = basinhopping(
@@ -294,18 +262,12 @@ def minimize_log_likelihood_fmax(
     return result
 
 
-def sweep_kd(
-    val, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error
-):
-    result = minimize_log_likelihood_fmax(
-        20000, val, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error
-    )
+def sweep_kd(val, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright):
+    result = minimize_log_likelihood_fmax(20000, val, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright)
     return round(1 / (n - 1) * result["fun"] - target, 4)
 
 
-def find_ci_roots(
-    x0, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error
-):
+def find_ci_roots(x0, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright):
     log_guesses = [
         (low, high)
         for low, high in zip([0.999, 0.8, 0.7, 0.6, 0.5], [1.01, 1.2, 1.3, 1.4, 1.5])
@@ -314,21 +276,7 @@ def find_ci_roots(
         ci_root_1 = fsolve(
             sweep_kd,
             x0 ** guess[0],
-            args=(
-                B,
-                Ck,
-                Hj,
-                Gj,
-                sigma,
-                rijk,
-                rjk,
-                rir,
-                sorting_frac,
-                fi,
-                n,
-                target,
-                ext_error,
-            ),
+            args=(B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright),
             xtol=0.001,
             full_output=True,
         )
@@ -338,21 +286,7 @@ def find_ci_roots(
         ci_root_2 = fsolve(
             sweep_kd,
             x0 ** guess[1],
-            args=(
-                B,
-                Ck,
-                Hj,
-                Gj,
-                sigma,
-                rijk,
-                rjk,
-                rir,
-                sorting_frac,
-                fi,
-                n,
-                target,
-                ext_error,
-            ),
+            args=(B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright),
             xtol=0.001,
             full_output=True,
         )
@@ -370,48 +304,20 @@ def find_ci_roots(
     return (ci_low, ci_high)
 
 
-def find_ci_roots_step(
-    x0, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error
-):
+def find_ci_roots_step(x0, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright):
     if x0 < 0 or x0 > 9999:
         return (0, 0)
     guess_low = [round(x0 - i, 2) for i in range(1, 10000) if (x0 - i) > 0]
     for guess1 in guess_low:
         x1 = sweep_kd(
-            guess1,
-            B,
-            Ck,
-            Hj,
-            Gj,
-            sigma,
-            rijk,
-            rjk,
-            rir,
-            sorting_frac,
-            fi,
-            n,
-            target,
-            ext_error,
+            guess1, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright
         )
         if x1 > 0:
             break
     guess_high = [round(x0 + i, 2) for i in range(1, 10000) if (x0 + i) < 10000]
     for guess2 in guess_high:
         x2 = sweep_kd(
-            guess2,
-            B,
-            Ck,
-            Hj,
-            Gj,
-            sigma,
-            rijk,
-            rjk,
-            rir,
-            sorting_frac,
-            fi,
-            n,
-            target,
-            ext_error,
+            guess2, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright
         )
         if x2 > 0:
             break
@@ -428,9 +334,7 @@ def objective_sweep_kd(x, *args):
     return np.square(sweep_kd(x, *args))
 
 
-def find_ci_roots_optimizer(
-    x0, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error
-):
+def find_ci_roots_optimizer(x0, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright):
     log_guesses = [
         (low, high)
         for low, high in zip([0.999, 0.8, 0.7, 0.6, 0.5], [1.01, 1.2, 1.3, 1.4, 1.5])
@@ -438,21 +342,7 @@ def find_ci_roots_optimizer(
 
     minimizer_kwargs = {
         "method": "L-BFGS-B",
-        "args": (
-            B,
-            Ck,
-            Hj,
-            Gj,
-            sigma,
-            rijk,
-            rjk,
-            rir,
-            sorting_frac,
-            fi,
-            n,
-            target,
-            ext_error,
-        ),
+        "args": (B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error, bright),
     }
 
     # Perform the basinhopping optimization
@@ -528,6 +418,7 @@ def run_mle(
     print_df=False,
     verbose=False,
     status=True,
+    brightness_adjust=False,
 ):
     (
         variants,
@@ -597,7 +488,7 @@ def run_mle(
         if variant_col == "Barcode":
             rir = var_df["ref_barcode"][0]
         elif variant_col == "Variant":
-            rir = var_df["ref_variant"][0]  # NOTE: This is changed from "Fi"
+            rir = var_df["ref_variant"][0] # NOTE: This is changed from "Fi"
 
         rijk = var_df["Rijk"]  # reads of variant i in bin j at labeling concentration k
         rjk = var_df["Rjk"]  # reads of bin j at labeling concentration k
@@ -607,6 +498,10 @@ def run_mle(
         nk = var_df["Nk"]
         njk = var_df["Njk"]
         sumrir = var_df["ref_total"][0]
+        if brightness_adjust:
+            bright = var_df['brightness_adjust']
+        else:
+            bright = [1]*len(var_df)
         fi = rir / sumrir
         sorting_frac = [njk / nk for njk, nk in zip(njk, nk)]
         n = len(rijk)
@@ -622,36 +517,18 @@ def run_mle(
 
         # Run minimization
         for guess in initial_guesses:
-            result, success = minimize_log_likelihood(
-                guess,
-                bounds,
-                B,
-                Ck,
-                Hj,
-                Gj,
-                sigma,
-                rijk,
-                rjk,
-                rir,
-                sorting_frac,
-                fi,
-                ext_error,
-            )
-            solution = [
-                round(result["x"][0], 2),
-                round(result["x"][1], 2),
-                round(result["fun"], 2),
-            ]
+            result, success = minimize_log_likelihood(guess, bounds, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright)
+            solution = [round(result["x"][0], 2), round(result["x"][1], 2), round(result["fun"], 2)]
             initial_guess = guess
             if success == True:
                 break
-        #         kds_to_sample = sample_log_spaced(round(solution[0]), num_points=200)
-        #         ll = []
-        #         for val in kds_to_sample:
-        #             sum_l = sum_likelihood([val, solution[1]], B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error)
-        #             ll.append(round(-1*sum_l, 3))
-        #         logl_output = pd.DataFrame({"Kd": kds_to_sample, "LL": ll})
-        #         logl_output.to_csv(variant + "_loglikelihood.csv", index=False)
+#         kds_to_sample = sample_log_spaced(round(solution[0]), num_points=200)
+#         ll = []
+#         for val in kds_to_sample:
+#             sum_l = sum_likelihood([val, solution[1]], B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error)
+#             ll.append(round(-1*sum_l, 3))
+#         logl_output = pd.DataFrame({"Kd": kds_to_sample, "LL": ll})
+#         logl_output.to_csv(variant + "_loglikelihood.csv", index=False)
         if verbose:
             print(solution)
         chi_sq_red_min = round(1 / (n - 2) * solution[2], 4)
@@ -661,28 +538,15 @@ def run_mle(
         # plot fluorescence reconstruction and CI reduced chi squared
         if plot:
             kds_to_sample = sample_log_spaced(round(solution[0]), num_points=200)
-            x2 = []
+            x2= []
             for val in kds_to_sample:
-                result = minimize_log_likelihood_fmax(
-                    20000,
-                    val,
-                    B,
-                    Ck,
-                    Hj,
-                    Gj,
-                    sigma,
-                    rijk,
-                    rjk,
-                    rir,
-                    sorting_frac,
-                    fi,
-                    ext_error,
-                )
+                result = minimize_log_likelihood_fmax(20000, val, B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, ext_error, bright)
                 x2.append(round(1 / (n - 1) * result["fun"], 2))
             if variant_col == "Barcode":
                 plot_ci(kds_to_sample, x2, bc + "_" + variant, target)
             if variant_col == "Variant":
                 plot_ci(kds_to_sample, x2, variant, target)
+
 
         # Solve for 95% confidence intervals - second step function solver if fsolve fails
         ci_roots = find_ci_roots(
@@ -700,6 +564,7 @@ def run_mle(
             n,
             target,
             ext_error,
+            bright,
         )
         if (ci_roots[0] == 0 or ci_roots[1] == 0) and solution[0] < 9999:
             #             ci_roots = find_ci_roots_step(solution[0], B, Ck, Hj, Gj, sigma, rijk, rjk, rir, sorting_frac, fi, n, target, ext_error)
@@ -718,6 +583,7 @@ def run_mle(
                 n,
                 target,
                 ext_error,
+                bright,
             )
         cil.append(ci_roots[0])
         cih.append(ci_roots[1])
@@ -762,7 +628,7 @@ def run_mle(
     )
 
     # ensure that WT is processed first
-    kd_wt = 1_000_000  # 1mM reference state
+    kd_wt = 1_000_000     #1mM reference state
     output_df["dg"] = kd_to_ddg(output_df["Kd"], kd_wt)
     output_df["Ab"] = output_df["Variant"].apply(get_gene)
     output_df = output_df.sort_values(by=["Variant"])

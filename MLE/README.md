@@ -26,4 +26,7 @@ sigma: standard deviation of population
 Kd_pred: Kd guess value
 bounds: solver limits
 
-
+For brightness adjustment:
+	1. Perform haplotyping and scanning as normal
+	2. Add column with name "brightness_adjust" with values to be multiplied by Fmax (can use the adjust_brightness.py script to automate this)
+	3. Run MLE with brightness_adjust=True 
