@@ -34,6 +34,8 @@ To merge reads, haplotype, and merge the $V_H$ and $V_L$ maps: `$ python3 genera
 
 For the haplotyping and merging protocols, a csv of parameters for the wild-type sequence is required. Look at `example_wts.csv` in the `examples` folder for reference. Amplicon length, gene start, gene end, barcode start, and barcode end must be specified for both $V_H$ or $V_L$ wild-type sequences.
 
+Additionally, haplotyping by default merges UMIs within a Hamming distance of 1 to the parent UMI, which is the one with the highest number of reads. Matching the sorted reads in `scan_barcode.py` uses the same strategy, where each barcode is mapped to a variant based on a Hamming distance of 1 to the parent UMI. Though these mismatches from the parent barcode do not occur frequently (< 1\% in aggregate), it is possible that some sorted reads that should be discarded are mapped to a variant. This should not appreciably affect the parameter estimation, but it is worth noting.
+
 Each of the config files has a template format given in this repository in the `examples` folder. Each section and parameter in the templates is required for the code to run (though in merging the barcode start and end do not need to be actual starts and ends, and the barcode_min_qual should be 0). 
 
 For scanning, each sample is considered a separate FACS run. The concentration and bin should be specified in the format in the example matching config. A reference sample as specified in the matching config example is required if MLE is to be run on the result.

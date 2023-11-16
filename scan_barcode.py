@@ -4,7 +4,7 @@ import pandas as pd
 import sys
 import re
 import time
-from utilities.haplotype import open_by_extension
+from utilities.haplotype import open_by_extension, hamming_distance
 from utilities.merge import read_seqs, byte_array_to_str
 from utilities.arguments import parse_args_and_read_config_match
 import doctest
@@ -119,32 +119,36 @@ def match_barcodes(
     if type(file) == list:
         for seq in file:
             read_barcode = barcode(seq, template, barcode_start)
-            if read_barcode in barcodes["Barcode"].values:
+            read_matches = barcodes["Barcode"].apply(lambda x: hamming_distance(read_barcode, x) <= 1) if read_barcode is not None else [0]
+            if any(read_matches):    
                 if read_barcode in matched:
                     matched[read_barcode].append(
-                        barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
+                        barcodes[read_matches]["Variant"].values[
                             0
                         ]
                     )
                 else:
                     matched[read_barcode] = [
-                        barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
+                        barcodes[read_matches]["Variant"].values[
                             0
                         ]
                     ]
+            else:
+                num_unmatched += 1
     else:  # file is a file handle
         for id, seq, space, qual in read_seqs(file):
             read_barcode = barcode(seq, template, barcode_start)
-            if read_barcode in barcodes["Barcode"].values:
+            read_matches = barcodes["Barcode"].apply(lambda x: hamming_distance(read_barcode, x) <= 1) if read_barcode is not None else [0]
+            if any(read_matches):
                 if read_barcode in matched:
                     matched[read_barcode].append(
-                        barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
+                        barcodes[read_matches]["Variant"].values[
                             0
                         ]
                     )
                 else:
                     matched[read_barcode] = [
-                        barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
+                        barcodes[read_matches]["Variant"].values[
                             0
                         ]
                     ]

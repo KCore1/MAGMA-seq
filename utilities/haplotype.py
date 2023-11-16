@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import time
 from scipy.stats import binom
+from scipy.spatial.distance import hamming
 import warnings
 from merge_vhvl import collapse_mutations
 
@@ -41,6 +42,11 @@ def open_by_extension(path, mode):
     use open."""
     return (gzip.open if path.endswith("gz") else open)(path, mode)
 
+
+def hamming_distance(s1, s2):
+    """Calculate the integer Hamming distance between two strings.
+    Comparison is with reference to s1."""
+    return int(hamming(list(s1), list(s2)) * len(s1))
 
 # For these functions, s can be string or byte array
 
@@ -187,6 +193,7 @@ def merge_all_reads(
 
 
 def min_hamming_distance(mut, wts, print_align=False):
+    """Assign the gene based on the minimum hamming distance between mutation and wildtype sequence"""
     distances = []
     for wt in wts:
         gene_start = wt[
@@ -207,6 +214,29 @@ def min_hamming_distance(mut, wts, print_align=False):
     else:
         min_idx = distances.index(min(distances))
     return min_idx, wts[min_idx]
+
+def group_barcodes_by_hamming(barcodes: dict, threshold_distance: int=1):
+    """Group together all barcodes in the barcode-variant-count dictionary by hamming distance.
+    barcodes: dictionary of dictionaries, barcodes ungrouped (the same as "d" in choose_variant)
+    threshold_distance: group barcodes within this hamming distance of the highest frequency barcode
+    Returns a dictionary of dictionaries, where the keys of the outer dictionary are the barcodes
+    with highest total frequency in that group."""
+
+    # first, we want barcodes sorted by frequency
+    barcodes = {k: v for k, v in sorted(barcodes.items(), key=lambda item: sum(item[1].values()), reverse=True)}
+
+    groups = {}
+    for barcode in barcodes:
+        added = False
+        for group in groups:
+            if hamming_distance(barcode, group) <= threshold_distance:
+                for key, value in barcodes[barcode].items():
+                    groups[group][key] = groups[group].get(key, 0) + value
+                added = True
+                break
+        if not added:
+            groups[barcode] = barcodes[barcode]
+    return groups
 
 
 def match_barcode_and_variant(reads, amplens, wt_csv_path, barcode_params):
@@ -282,10 +312,11 @@ def match_barcode_and_variant(reads, amplens, wt_csv_path, barcode_params):
         freq[var] += 1
         genes[var] = (wt.gene, wt.vh_or_vl)
 
+    groups = group_barcodes_by_hamming(counts)
     total_size = sum(freq.values())
     freq = {k: v / total_size for k, v in freq.items()}  # normalize frequencies
 
-    return counts, freq, genes
+    return groups, freq, genes
 
 
 def barcode_to_variant_map(reads, amplens, wt_csv_path, barcode_params):
