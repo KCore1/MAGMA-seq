@@ -16,8 +16,6 @@ This repository contains code for haplotyping and Maximum Likelihood Estimation 
 
 ## 2. Running the code ##
 
-### Wild-type CSV ###
-
 The sequencing analysis section of the code can be run in two ways: with or without barcoding. If the config file contains a barcoding section, the code will run the barcoding analysis. See test_barcode.config and test.config files for example config files with and without barcoding, respectively.
 
 To run the haplotyping protocol: `$ python3 main.py --config <path to haplotyping/barcode config>`
