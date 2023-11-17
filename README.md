@@ -59,7 +59,7 @@ For using parallel computing on a slurm cluster use the run_mle_blanca.sh bash s
 
 Some configuration examples are provided in the `examples` folder. Two different configuration file types are required for a full run of the pipeline: a barcoding config, and a scanning/matching config. The barcoding config is used for the first step of the pipeline, which is to merge reads and haplotype the sequences. The scanning/matching config is used for the next step of the pipeline, which is to scan the barcodes and match them to the $V_H$ and $V_L$ maps. The MLE step uses parameters defined in the run scripts. As an example, see `MLE_variants.py` or `MLE_barcodes.py`.
 
-To run the barcoding step, it is easiest to provide a separate config file that specifies both the $V_H$ and $V_L$ sequencing files and how they should be merged. An example is given in `all_maps.py`, `all_genes_VH.py`, and `all_genes_VL.py`.
+To run the barcoding step, it is easiest to provide a separate config file that specifies both the $V_H$ and $V_L$ sequencing files and how they should be merged. An example is given in `all_maps.config`, `all_genes_VH.config`, and `all_genes_VL.config`.
 
 The config file for the barcoding step should have the following sections:
 
