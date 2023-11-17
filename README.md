@@ -2,7 +2,7 @@
 
 [![version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://semver.org)
 
-README Updated: October 11, 2023
+README Updated: November 16, 2023
 
 ## CONTENTS: ##
 1. About
