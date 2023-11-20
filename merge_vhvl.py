@@ -45,6 +45,12 @@ def merge_vhvl(v_h: pd.DataFrame, v_l: pd.DataFrame):
             "Gene": "Gene_L",
         }
     )
+    
+    # Throw error if dataframes are empty
+    if v_h.empty:
+        raise ValueError("V_H DataFrame is empty.")
+    if v_l.empty:
+        raise ValueError("V_L DataFrame is empty.")    
 
     # Merge the two DataFrames
     df = pd.merge(v_h, v_l, on="Barcode", how="inner")
