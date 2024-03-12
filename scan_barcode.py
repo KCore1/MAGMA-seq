@@ -94,7 +94,8 @@ def barcodes_per_variant(df, d=dict()):
     d = {k: (v, len(v)) for k, v in d}
     return d
 
-
+'''
+#Uncomment for the function that matches barcodes within a hamming distance of 1
 def match_barcodes(
     barcodes: pd.DataFrame, file, template, barcode_start, sample_name, debug=False
 ):
@@ -149,6 +150,70 @@ def match_barcodes(
                 else:
                     matched[read_barcode] = [
                         barcodes[read_matches]["Variant"].values[
+                            0
+                        ]
+                    ]
+            else:
+                num_unmatched += 1
+    if debug:
+        total_matched_reads = sum([len(v) for v in matched.values()])
+        print(
+            f"Sample: {sample_name}\nNumber of matched barcodes = {len(matched)}\nPercent of matched reads = {round(100*total_matched_reads/(total_matched_reads+num_unmatched),2)}\n"
+        )
+    # this second parameter is rjk in MLE
+    return matched, num_unmatched + total_matched_reads
+'''
+
+def match_barcodes(
+    barcodes: pd.DataFrame, file, template, barcode_start, sample_name, debug=False
+):
+    """Match barcodes to reads and return a list of matches.
+
+    barcodes -- A barcode variant map (DataFrame: Barcode, Variant, Freq, Count, P-value).
+    file -- An open file handle of barcodes from sorted population (read from open file handle from gzip.open).
+    template -- A barcode template (string).
+    barcode_start -- The start of the barcode (int).
+
+    Defining doctests:
+    >>> barcodes = pd.DataFrame({'Barcode': ['ATG', 'ATC'], 'Variant': ['A', 'C'], 'Freq': [0.5, 0.5], 'Count': [1, 1], 'P-value': [0.5, 0.5]})
+    >>> reads = ['GAATGCAB', 'GAATGCAC', 'GAATGCAT', 'GAATGCAG', 'GAATACGA', 'GAATACGC', 'GAATCCGT', 'GAATACGG']
+    >>> template = 'ATS'
+    >>> barcode_start = 2
+    >>> match_barcodes(barcodes, reads, template, barcode_start)
+    {'ATG': ['A', 'A', 'A', 'A'], 'ATC': ['C']}
+
+    """
+    num_unmatched = 0
+    matched = dict()
+    if type(file) == list:
+        for seq in file:
+            read_barcode = barcode(seq, template, barcode_start)
+            if read_barcode in barcodes["Barcode"].values:
+                if read_barcode in matched:
+                    matched[read_barcode].append(
+                        barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
+                            0
+                        ]
+                    )
+                else:
+                    matched[read_barcode] = [
+                        barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
+                            0
+                        ]
+                    ]
+    else:  # file is a file handle
+        for id, seq, space, qual in read_seqs(file):
+            read_barcode = barcode(seq, template, barcode_start)
+            if read_barcode in barcodes["Barcode"].values:
+                if read_barcode in matched:
+                    matched[read_barcode].append(
+                        barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
+                            0
+                        ]
+                    )
+                else:
+                    matched[read_barcode] = [
+                        barcodes[barcodes["Barcode"] == read_barcode]["Variant"].values[
                             0
                         ]
                     ]
