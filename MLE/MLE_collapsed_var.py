@@ -13,7 +13,6 @@ from MLE_functions import *
 
 warnings.filterwarnings("ignore")
 
-
 # Input parameters
 sigma = 1.02
 B = 350
@@ -26,7 +25,7 @@ conc_to_ignore = [0, 1, 25]
 input_csv = "/projects/brpe7306/fab-library-barcoding/Match_final/_collapsed.csv"
 # input_csv = "/projects/brpe7306/fab-library-barcoding/Match_COV2_final/_collapsed.csv"
 
-output_csv = "/projects/brpe7306/fab-library-barcoding/MLE/output/sigma1_02.csv"
+output_csv = "/projects/brpe7306/MAGMA-seq/MLE/test.csv"
 
 input_df = pd.read_csv(input_csv)
 variants = input_df["Variant"].unique()[:10]

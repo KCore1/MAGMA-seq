@@ -430,13 +430,14 @@ def run_mle(
         counts,
         concs,
         sf,
-        ers,
+        pijks,
+        modelijks,
         avg_counts,
         x2s,
         cil,
         cih,
         ns,
-    ) = ([] for _ in range(15))
+    ) = ([] for _ in range(16))
     total_vars = len(input_df[variant_col].unique())
 
     for i, bc in enumerate(input_df[variant_col].unique()):
@@ -467,6 +468,8 @@ def run_mle(
                 (input_df[variant_col] == bc)
                 & (~input_df["Concentration"].isin(conc_to_ignore))
             ].copy()
+            
+        var_df = var_df.sort_values(['Concentration', 'Bin'])
         if status:
             print(
                 str("".join(["█"] * int((i + 1) / total_vars * 100)))
@@ -601,11 +604,16 @@ def run_mle(
         logl.append(solution[2])
         successes.append(success)
         er = [round(np.log2((ri / rj) / fi), 2) for ri, rj in zip(rijk, rjk)]
-        ers.append(er)
+        
         mean_f = calc_mean_fluor(sigma, Gj, sorting_frac, er)
         if plot:
             plot_reconstruction(solution[0], solution[1], Ck, mean_f, variant)
-
+        # test
+        Fbar_ik = calc_Fbar(Kd=solution[0], Fmax=solution[1], B=B, Ck=Ck, bright=bright)
+        pijk = calc_pijk(Fbar=Fbar_ik, Hj=Hj, Gj=Gj, sigma=sigma, error_rate=0)
+        pijk_exp = calc_pijk_exp(fi=fi, rijk=rijk, rjk=rjk, sorting_frac=sorting_frac)
+        modelijks.append([round(p, 4) for p in pijk])
+        pijks.append([round(p, 4) for p in pijk_exp])
     # output data to csv
     output_df = pd.DataFrame(
         {
@@ -617,8 +625,9 @@ def run_mle(
             "LL": logl,
             "Rijk": counts,
             "Concentrations": concs,
+            "Pijk": pijks,
+            "Modelijk": modelijks,
             "sorted fractions": sf,
-            "ER": ers,
             "Avg_counts": avg_counts,
             "X^2_red_min": x2s,
             "95% CI low": cil,
