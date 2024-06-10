@@ -478,6 +478,7 @@ def run_mle(
                 + "% complete",
                 end="\r",
             )
+        num_datapoints = len(var_df.index)
 
         if len(var_df.index) < 4:
             continue
@@ -504,7 +505,7 @@ def run_mle(
         if brightness_adjust:
             bright = var_df['brightness_adjust']
         else:
-            bright = [1]*len(var_df)
+            bright = [1]*num_datapoints
         fi = rir / sumrir
         sorting_frac = [njk / nk for njk, nk in zip(njk, nk)]
         n = len(rijk)

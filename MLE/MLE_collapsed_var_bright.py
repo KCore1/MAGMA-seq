@@ -48,9 +48,9 @@ output = run_mle(
     highmid_only=False,
     mid_only=False,
     plot=False,
-    print_df=False,
+    print_df=True,
     verbose=False,
-    brightness_adjust=False,
+    brightness_adjust=True,
 )
 end = time.time()
 output.to_csv(output_csv, index=False)
